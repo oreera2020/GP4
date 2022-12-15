@@ -3,6 +3,7 @@ from PIL import Image
 import os
 import numpy as np
 from imblearn.under_sampling import RandomUnderSampler
+from matplotlib import image as mpimg, pyplot as plt
 from sklearn import svm
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
@@ -10,6 +11,13 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from tabulate import tabulate
+from PIL import Image
+import numpy as np
+
+
+# def augment(x, y):
+#
+#     return x, y
 
 
 def get_x_y(path1, path2):
@@ -60,7 +68,8 @@ def best_finder(x_data, y_data):
         'Support Vector Machine': {
             'model': svm.SVC(),
             'params': {
-                'kernel': ['linear', 'poly', 'rbf', 'sigmoid']
+                'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+                'C': [0.1, 0.3, 0.5, 0.7, 0.9, 1.0]
             }
         },
         'Naive Bayes': {
@@ -119,7 +128,8 @@ def best_test_finder(x_test, y_test, best_params):
         'Support Vector Machine': {
             'model': svm.SVC(),
             'params': {
-                'kernel': [best_params[1]['kernel']]
+                'kernel': [best_params[1]['kernel']],
+                'C': [best_params[1]['C']]
             }
         },
         'Naive Bayes': {
@@ -169,29 +179,30 @@ def best_test_finder(x_test, y_test, best_params):
                                                                                         "predict machine failure for future data.")
 
 
-# Print Image from directory in SciView
-# img = mpimg.imread(r'C:\Users\alexa\Documents\Senior Year\B Term\Intro to AI\GP4\brain_tumor_dataset\no\1 no.jpeg')
-# imgplot = plt.imshow(img)
-# plt.show()
-
 def main():
-    x, y = get_x_y(r"C:\Users\alexa\Documents\Senior Year\B Term\Intro to AI\GP4\brain_tumor_dataset\no",
-                   r"C:\Users\alexa\Documents\Senior Year\B Term\Intro to AI\GP4\brain_tumor_dataset\yes")
+    x, y = get_x_y(r"brain_tumor_dataset\no",
+                   r"brain_tumor_dataset\yes")
 
     rus = RandomUnderSampler(random_state=42)
     X_res, y_res = rus.fit_resample(x, y)
 
-    pd.set_option('display.max_rows', None)
+    # pd.set_option('display.max_rows', None)
+    # print(X_res)
 
-    print(X_res)
+    # Print Image from directory in SciView
+    # img = mpimg.imread(r'C:\Users\alexa\Documents\Senior Year\B Term\Intro to AI\GP4\brain_tumor_dataset\no\1 no.jpeg')
+    # imgplot = plt.imshow(img)
+    # plt.show()
+
+    new_shape = np.reshape(x[200],(32,32))
+    plt.imshow(new_shape)
+    plt.show()
 
     x_train, x_test, y_train, y_test = train_test_split(X_res, y_res, test_size=0.3, train_size=0.7, random_state=42)
 
     five_k_val = best_finder(x_train, y_train)
     print("\n")
     best_test_finder(x_test, y_test, five_k_val)
-
-
 
 
 if __name__ == "__main__":
