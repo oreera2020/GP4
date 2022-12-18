@@ -20,6 +20,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.utils import shuffle
 from tabulate import tabulate
+import tensorflow as tf
 from sklearn.preprocessing import LabelBinarizer
 
 
@@ -36,10 +37,10 @@ def get_x_y(path1, path2):
             img = Image.open(filename.path)
             img = img.resize(size=(32, 32))
             img = img.convert('L')
-            data.append(np.array(img).flatten())
+            data.append(img)
             # Label 0 means that there is no tumor detected
             y.append(0)
-            del img
+            # del img
 
     # Preprocess the yes pictures
     for filename in os.scandir(path2):
@@ -48,13 +49,14 @@ def get_x_y(path1, path2):
             img = Image.open(filename.path)
             img = img.resize(size=(32, 32))
             img = img.convert('L')
-            data.append(np.array(img).flatten())
+            data.append(img)
             # Label 1 means that there is a tumor detected
             y.append(1)
-            del img
+            # del img
 
     # Convert the array of data into a numpy array
     x = np.array(data)
+    y = np.array(y)
 
     return x, y
 
@@ -190,6 +192,13 @@ def best_test_finder(x_test, y_test, best_params):
 # img = mpimg.imread(r'C:\Users\alexa\Documents\Senior Year\B Term\Intro to AI\GP4\brain_tumor_dataset\no\1 no.jpeg')
 # imgplot = plt.imshow(img)
 # plt.show()
+def calc_accuracy(predictions, labels):
+    correct = 0
+    for i in range(len(predictions)):
+        if predictions[i] == labels[i]:
+            correct += 1
+    accuracy = correct / len(predictions)
+    return accuracy
 
 def main():
     print("A")
@@ -226,21 +235,27 @@ def main():
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     # Load the training data
-    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+    # (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+    #
+    # # Preprocess the data
+    # x_train = x_train.reshape((-1, 28, 28, 1))
+    # x_test = x_test.reshape((-1, 28, 28, 1))
+    # x_train = x_train.astype('float32') / 255
+    # x_test = x_test.astype('float32') / 255
+    #
+    # # Train the model
+    # model.fit(x_train, y_train, epochs=5, batch_size=64)
+    # test_loss, test_acc = model.evaluate(x_test, y_test)
+    # print('Test loss:', test_loss)
+    # print('Test accuracy:', test_acc)
+    # predictions = model.predict(x_test)
+    # print(predictions)
 
-    # Preprocess the data
-    x_train = x_train.reshape((-1, 28, 28, 1))
-    x_test = x_test.reshape((-1, 28, 28, 1))
-    x_train = x_train.astype('float32') / 255
-    x_test = x_test.astype('float32') / 255
-
-    # Train the model
-    model.fit(x_train, y_train, epochs=5, batch_size=64)
-    test_loss, test_acc = model.evaluate(x_test, y_test)
-    print('Test loss:', test_loss)
-    print('Test accuracy:', test_acc)
     predictions = model.predict(x_test)
-    print(predictions)
+    predictions = [int(round(p)) for p in predictions]
+
+    accuracy = calc_accuracy(predictions, y_test)
+    print(accuracy)
 
 
 if __name__ == "__main__":
