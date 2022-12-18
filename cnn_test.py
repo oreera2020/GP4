@@ -251,10 +251,10 @@ def main():
     # predictions = model.predict(x_test)
     # print(predictions)
 
-    predictions = model.predict(x_test)
+    predictions = model.predict(x)
     predictions = [int(round(p)) for p in predictions]
 
-    accuracy = calc_accuracy(predictions, y_test)
+    accuracy = calc_accuracy(predictions, y)
     print(accuracy)
 
 
