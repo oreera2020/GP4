@@ -205,8 +205,8 @@ def main():
     x, y = get_x_y(r"/Users/sultanadedeji/PycharmProjects/Fall2022CS4341/GP4/brain_tumor_dataset/no",
                    r"/Users/sultanadedeji/PycharmProjects/Fall2022CS4341/GP4/brain_tumor_dataset/yes")
 
-    rus = RandomUnderSampler(random_state=42)
-    X_res, y_res = rus.fit_resample(x, y)
+    # rus = RandomUnderSampler(random_state=42)
+    # X_res, y_res = rus.fit_resample(x, y)
     #
     # pd.set_option('display.max_rows', None)
     #
@@ -215,11 +215,11 @@ def main():
     # plt.imshow(new_shape)
     # plt.show()
 
-    x_train, x_test, y_train, y_test = train_test_split(X_res, y_res, test_size=0.3, train_size=0.7, random_state=42)
+    # x_train, x_test, y_train, y_test = train_test_split(X_res, y_res, test_size=0.3, train_size=0.7, random_state=42)
 
-    five_k_val = best_finder(x_train, y_train)
-    print("\n")
-    best_test_finder(x_test, y_test, five_k_val)
+    # five_k_val = best_finder(x_train, y_train)
+    # print("\n")
+    # best_test_finder(x_test, y_test, five_k_val)
 
 
     model = tf.keras.Sequential()
