@@ -25,37 +25,6 @@ from sklearn.preprocessing import LabelBinarizer
 
 def get_x_y(path1, path2):
     # Convert jpeg images to array representation
-    # data = []
-    # # labels for training
-    # y = []
-
-    # # pre process the no pictures
-    # for filename in os.scandir(path1):
-    #     if filename.is_file():
-    #         # print(filename.path)
-    #         img = Image.open(filename.path)
-    #         img = img.resize(size=(32, 32))
-    #         img = img.convert('L')
-    #         data.append(np.array(img).flatten())
-    #         # Label 0 means that there is no tumor detected
-    #         y.append(0)
-    #         del img
-    #
-    # # Preprocess the yes pictures
-    # for filename in os.scandir(path2):
-    #     if filename.is_file():
-    #         # print(filename.path)
-    #         img = Image.open(filename.path)
-    #         img = img.resize(size=(32, 32))
-    #         img = img.convert('L')
-    #         data.append(np.array(img).flatten())
-    #         # Label 1 means that there is a tumor detected
-    #         y.append(1)
-    #         del img
-    #
-    # # Convert the array of data into a numpy array
-    # x = np.array(data)
-
     data = []
     # labels for training
     y = []
@@ -64,64 +33,30 @@ def get_x_y(path1, path2):
     for filename in os.scandir(path1):
         if filename.is_file():
             # print(filename.path)
-            img = cv2.imread(filename.path)
-            img = cv2.resize(img, dsize=(32, 32), interpolation=cv2.INTER_CUBIC)
-            img = img / 255.0
-            data.append(img)
+            img = Image.open(filename.path)
+            img = img.resize(size=(32, 32))
+            img = img.convert('L')
+            data.append(np.array(img).flatten())
             # Label 0 means that there is no tumor detected
             y.append(0)
+            del img
 
     # Preprocess the yes pictures
     for filename in os.scandir(path2):
         if filename.is_file():
             # print(filename.path)
-            # print(filename.path)
-            img = cv2.imread(filename.path)
-            img = cv2.resize(img, dsize=(32, 32), interpolation=cv2.INTER_CUBIC)
-            img = img / 255.0
-            data.append(img)
+            img = Image.open(filename.path)
+            img = img.resize(size=(32, 32))
+            img = img.convert('L')
+            data.append(np.array(img).flatten())
             # Label 1 means that there is a tumor detected
             y.append(1)
+            del img
 
     # Convert the array of data into a numpy array
     x = np.array(data)
-    y = np.array(y)
-
-    x, y = shuffle(x, y)
 
     return x, y
-
-
-def split_data(X, y, test_size=0.2):
-    X_train, X_test_val, y_train, y_test_val = train_test_split(X, y, test_size=test_size, shuffle=True)
-    X_test, X_val, y_test, y_val = train_test_split(X_test_val, y_test_val, test_size=0.5, shuffle=True)
-
-    return X_train, y_train, X_val, y_val, X_test, y_test
-
-
-def cnn():
-    model = Sequential()
-    model.add(Conv2D(64, (3, 3), input_shape=(240, 240, 3)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    model.add(Conv2D(128, (3, 3)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    model.add(Conv2D(256, (3, 3)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    model.add(Flatten())
-    model.add(Dense(128))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
-
-    model.add(Dense(1))
-    model.add(Activation('sigmoid'))
-
-    return model
 
 
 def best_finder(x_data, y_data):
@@ -255,8 +190,8 @@ def main():
     x, y = get_x_y(r"/Users/sultanadedeji/PycharmProjects/Fall2022CS4341/GP4/brain_tumor_dataset/no",
                    r"/Users/sultanadedeji/PycharmProjects/Fall2022CS4341/GP4/brain_tumor_dataset/yes")
 
-    # rus = RandomUnderSampler(random_state=42)
-    # X_res, y_res = rus.fit_resample(x, y)
+    rus = RandomUnderSampler(random_state=42)
+    X_res, y_res = rus.fit_resample(x, y)
     #
     # pd.set_option('display.max_rows', None)
     #
@@ -265,21 +200,35 @@ def main():
     # plt.imshow(new_shape)
     # plt.show()
 
-    # x_train, x_test, y_train, y_test = train_test_split(X_res, y_res, test_size=0.3, train_size=0.7, random_state=42)
+    x_train, x_test, y_train, y_test = train_test_split(X_res, y_res, test_size=0.3, train_size=0.7, random_state=42)
 
-    # five_k_val = best_finder(x_train, y_train)
-    # print("\n")
-    # best_test_finder(x_test, y_test, five_k_val)
+    five_k_val = best_finder(x_train, y_train)
+    print("\n")
+    best_test_finder(x_test, y_test, five_k_val)
 
-    print("A")
-    x_train, x_test, x_val, y_val, y_train, y_test = split_data(x, y, test_size=0.2)
-    our_cnn = cnn()
-    our_cnn.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-    # our_cnn.fit(x_train, y_train, batch_size=64, epochs=20, validation_data=(x_val, y_val))
-    #
-    # SVG(model_to_dot(our_cnn, show_shapes=True).create(prog='dot', format='svg'))
-    # score = our_cnn.evaluate(x_test, y_test, verbose=0)
-    # print('\n', 'Test accuracy:', score[1])
+    model = Sequential()
+    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Conv2D(128, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Flatten())
+    model.add(Dense(64, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(1, activation='sigmoid'))
+
+    model.compile(loss=keras.losses.binary_crossentropy, optimizer='adam', metrics=['accuracy'])
+
+    # model.summary()
+
     train_datagen = image.ImageDataGenerator(
         rescale=1. / 255,
         shear_range=0.2,
@@ -305,7 +254,7 @@ def main():
         class_mode='binary'
     )
 
-    hist = our_cnn.fit(
+    hist = model.fit(
         train_generator,
         steps_per_epoch=4,
         epochs=8,
@@ -313,9 +262,9 @@ def main():
         validation_steps=2
     )
 
-    print("Training data: ", our_cnn.evaluate(train_generator))
+    print("Training data: ", model.evaluate(train_generator))
 
-    print("Testing data: ", our_cnn.evaluate(validation_generator))
+    print("Testing data: ", model.evaluate(validation_generator))
 
 
 if __name__ == "__main__":
